@@ -71,7 +71,7 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     private fun internetIsUnAvailable() {
-        networkListeners.forEach(InternetStateChangeListener::onInternetEnabled)
+        networkListeners.forEach(InternetStateChangeListener::onInternetDisabled)
     }
 
     private fun internetIsAvailable() {

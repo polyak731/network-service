@@ -131,6 +131,7 @@ class NetworkService : Service() {
         } else {
             registerFilter()
         }
+        messenger.send(Message.obtain(null, MSG_SET_VALUE, NetworkUtils.checkNetworkState(this)))
     }
 
     override fun onDestroy() {
