@@ -54,6 +54,8 @@ object NetworkUtils {
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             connectionManager.allNetworks.forEach {
+                println(connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true)
+                println(connectionManager.getNetworkCapabilities(it)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET))
                 if (connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
                     && connectionManager.getNetworkCapabilities(it)?.hasCapability(
                         NetworkCapabilities.NET_CAPABILITY_INTERNET

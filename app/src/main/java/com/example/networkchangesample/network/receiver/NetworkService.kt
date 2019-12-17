@@ -18,16 +18,15 @@ class NetworkService : Service() {
         const val MSG_REGISTER_CLIENT = 1
         const val MSG_UNREGISTER_CLIENT = 2
         const val MSG_SET_VALUE = 3
-        const val MSG_WIFI_RADIO = 4
-        const val MSG_CELLULAR_RADIO = 5
-
-        const val MSG_REQUEST = 6
+        const val MSG_DEFAULT = 4
+        const val MSG_WIFI_RADIO = 5
+        const val MSG_CELLULAR_RADIO = 6
+        const val MSG_REQUEST = 7
     }
 
     private val messenger = Messenger(IncomingHandler(this))
     private val networkReceiver = NetworkChangeReceiver(messenger)
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    private val networkCallback = NetworkChangeCallback(messenger)
+    private lateinit var networkCallback: NetworkChangeCallback
 
     @Suppress("DEPRECATION")
     private fun registerFilter() {
@@ -60,7 +59,7 @@ class NetworkService : Service() {
                     NetworkClass.Other -> {
                         notifyClient(
                             msg.replyTo,
-                            MSG_SET_VALUE,
+                            MSG_DEFAULT,
                             NetworkUtils.checkNetworkState(service)
                         )
                     }
@@ -81,7 +80,7 @@ class NetworkService : Service() {
                     NetworkClass.No -> {
                         notifyClient(
                             msg.replyTo,
-                            MSG_SET_VALUE,
+                            MSG_DEFAULT,
                             NetworkUtils.checkNetworkState(service)
                         )
                     }
@@ -90,39 +89,25 @@ class NetworkService : Service() {
         }
 
         private fun handleNetworkMessage(msg: Message) {
+            println("handleNetworkMessage")
             serviceReference.get()?.let { service ->
 
                 currentNetworkClass = when {
-                    NetworkUtils.checkWifiState(service) -> {
-                        if (currentNetworkClass == NetworkClass.Cellular) notifyClients(
-                            MSG_CELLULAR_RADIO,
-                            false
-                        )
-                        notifyClients(MSG_WIFI_RADIO, msg.obj)
+                    NetworkUtils.checkWifiState(service)
+                            || (NetworkUtils.checkWifiState(service) && NetworkUtils.checkCellularState(service))-> {
+                        notifyClients(MSG_WIFI_RADIO, true)
                         NetworkClass.WiFi
                     }
                     NetworkUtils.checkCellularState(service) -> {
-                        if (currentNetworkClass == NetworkClass.WiFi) notifyClients(
-                            MSG_WIFI_RADIO,
-                            false
-                        )
-                        notifyClients(MSG_CELLULAR_RADIO, msg.obj)
+                        notifyClients(MSG_CELLULAR_RADIO, true)
                         NetworkClass.Cellular
                     }
                     NetworkUtils.checkNetworkState(service) -> {
-                        if (currentNetworkClass == NetworkClass.WiFi) notifyClients(
-                            MSG_WIFI_RADIO,
-                            false
-                        )
-                        if (currentNetworkClass == NetworkClass.Cellular) notifyClients(
-                            MSG_CELLULAR_RADIO,
-                            false
-                        )
-                        notifyClients(MSG_SET_VALUE, msg.obj)
+                        notifyClients(MSG_DEFAULT, true)
                         NetworkClass.Other
                     }
                     else -> {
-                        notifyClients(MSG_SET_VALUE, msg.obj)
+                        notifyClients(MSG_DEFAULT, msg.obj)
                         NetworkClass.No
                     }
                 }
@@ -179,6 +164,7 @@ class NetworkService : Service() {
         val connectivityManager =
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val builder = NetworkRequest.Builder()
+        networkCallback = NetworkChangeCallback(messenger)
         connectivityManager.registerNetworkCallback(
             builder.build(),
             networkCallback

@@ -104,7 +104,7 @@ abstract class BaseActivity : AppCompatActivity() {
         override fun handleMessage(msg: Message) {
             activityReference.get()?.let { activity ->
                 when (msg.what) {
-                    NetworkService.MSG_SET_VALUE -> {
+                    NetworkService.MSG_DEFAULT -> {
                         if (getMessageValue(msg)) activity.internetIsAvailable()
                         else activity.internetIsUnAvailable()
                     }
