@@ -122,14 +122,6 @@ class NetworkService : Service() {
                         NetworkClass.Other
                     }
                     else -> {
-                        if (currentNetworkClass == NetworkClass.WiFi) notifyClients(
-                            MSG_WIFI_RADIO,
-                            false
-                        )
-                        if (currentNetworkClass == NetworkClass.Cellular) notifyClients(
-                            MSG_CELLULAR_RADIO,
-                            false
-                        )
                         notifyClients(MSG_SET_VALUE, msg.obj)
                         NetworkClass.No
                     }
