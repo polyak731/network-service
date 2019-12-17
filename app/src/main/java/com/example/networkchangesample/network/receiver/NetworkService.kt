@@ -21,6 +21,8 @@ class NetworkService : Service() {
         const val MSG_SET_VALUE = 3
         const val MSG_WIFI_RADIO = 4
         const val MSG_CELLULAR_RADIO = 5
+
+        const val MSG_REQUEST = 6
     }
 
     private val messenger = Messenger(IncomingHandler())
@@ -54,38 +56,65 @@ class NetworkService : Service() {
             when (msg.what) {
                 MSG_REGISTER_CLIENT -> clients.add(msg.replyTo)
                 MSG_UNREGISTER_CLIENT -> clients.remove(msg.replyTo)
-                MSG_SET_VALUE ->
-                    currentNetworkClass = when {
-                        NetworkUtils.checkWifiState(this@NetworkService) -> {
-                            notifyClients(MSG_WIFI_RADIO, msg.obj)
-                            NetworkClass.WiFi
-                        }
-                        NetworkUtils.checkCellularState(this@NetworkService) -> {
-                            notifyClients(MSG_CELLULAR_RADIO, msg.obj)
-                            NetworkClass.Cellular
-                        }
-                        NetworkUtils.checkNetworkState(this@NetworkService) -> {
-                            notifyClients(MSG_SET_VALUE, msg.obj)
-                            NetworkClass.Other
-                        }
-                        else -> {
-                            notifyClients(MSG_SET_VALUE, msg.obj)
-                            NetworkClass.No
-                        }
-                    }
+                MSG_REQUEST -> handleSingleMessage(msg)
+                MSG_SET_VALUE -> handleNetworkMessage(msg)
                 else -> super.handleMessage(msg)
+            }
+        }
+
+        private fun handleSingleMessage(msg: Message) {
+            when (currentNetworkClass) {
+                NetworkClass.Other -> {
+                    notifyClient(msg.replyTo, MSG_SET_VALUE, NetworkUtils.checkNetworkState(this@NetworkService))
+                }
+                NetworkClass.WiFi -> {
+                    notifyClient(msg.replyTo, MSG_WIFI_RADIO, NetworkUtils.checkWifiState(this@NetworkService))
+                }
+                NetworkClass.Cellular -> {
+                    notifyClient(msg.replyTo, MSG_CELLULAR_RADIO, NetworkUtils.checkCellularState(this@NetworkService))
+                }
+                NetworkClass.No -> {
+                    notifyClient(msg.replyTo, MSG_SET_VALUE, NetworkUtils.checkNetworkState(this@NetworkService))
+                }
+            }
+        }
+
+        private fun handleNetworkMessage(msg: Message) {
+            currentNetworkClass = when {
+                NetworkUtils.checkWifiState(this@NetworkService) -> {
+                    notifyClients(MSG_CELLULAR_RADIO, false)
+                    notifyClients(MSG_WIFI_RADIO, msg.obj)
+                    NetworkClass.WiFi
+                }
+                NetworkUtils.checkCellularState(this@NetworkService) -> {
+                    notifyClients(MSG_WIFI_RADIO, false)
+                    notifyClients(MSG_CELLULAR_RADIO, msg.obj)
+                    NetworkClass.Cellular
+                }
+                NetworkUtils.checkNetworkState(this@NetworkService) -> {
+                    notifyClients(MSG_SET_VALUE, msg.obj)
+                    NetworkClass.Other
+                }
+                else -> {
+                    notifyClients(MSG_SET_VALUE, msg.obj)
+                    NetworkClass.No
+                }
             }
         }
 
         private fun notifyClients(what: Int, obj: Any?) {
             for (i in clients.size - 1 downTo 0) {
-                val message = Message.obtain(null, what, obj)
                 try {
-                    clients[i].send(message)
+                    notifyClient(clients[i], what, obj)
                 } catch (e: RemoteException) {
                     clients.removeAt(i)
                 }
             }
+        }
+
+        private fun notifyClient(messenger: Messenger, what: Int, obj: Any?) {
+            val message = Message.obtain(null, what, obj)
+            messenger.send(message)
         }
     }
 

@@ -9,17 +9,15 @@ import android.os.*
 import androidx.appcompat.app.AppCompatActivity
 import com.example.networkchangesample.network.receiver.InternetStateChangeListener
 import com.example.networkchangesample.network.receiver.NetworkService
-import com.example.networkchangesample.utils.NetworkUtils
 
 abstract class BaseActivity : AppCompatActivity() {
 
     private var networkListeners: MutableList<InternetStateChangeListener> = mutableListOf()
 
+    private var mService: Messenger? = null
+    private val mMessenger: Messenger by lazy { Messenger(IncomingHandler()) }
+
     private val serviceConnection = object : ServiceConnection {
-
-        private var mService: Messenger? = null
-        private val mMessenger: Messenger by lazy { Messenger(IncomingHandler()) }
-
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             mService = Messenger(service)
             try {
@@ -49,7 +47,9 @@ abstract class BaseActivity : AppCompatActivity() {
 
     fun registerNetworkStateListener(listener: InternetStateChangeListener) {
         networkListeners.add(listener)
-        if (NetworkUtils.checkNetworkState(this)) listener.onInternetEnabled() else listener.onInternetDisabled()
+        val message = Message.obtain(null, NetworkService.MSG_REQUEST, this.hashCode(), 0)
+        message.replyTo = mMessenger
+        mService?.send(message)
     }
 
     fun unregisterNetworkStateListener(listener: InternetStateChangeListener) {
