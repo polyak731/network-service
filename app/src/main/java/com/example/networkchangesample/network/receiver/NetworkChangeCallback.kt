@@ -8,7 +8,8 @@ import android.os.Messenger
 import androidx.annotation.RequiresApi
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-class NetworkChangeCallback(private val messenger: Messenger) : ConnectivityManager.NetworkCallback() {
+class NetworkChangeCallback(private val messenger: Messenger) :
+    ConnectivityManager.NetworkCallback() {
     override fun onAvailable(network: Network) {
         messenger.send(Message.obtain(null, NetworkService.MSG_SET_VALUE, true))
     }

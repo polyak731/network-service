@@ -1,6 +1,5 @@
 package com.example.networkchangesample
 
-import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -9,13 +8,14 @@ import android.os.*
 import androidx.appcompat.app.AppCompatActivity
 import com.example.networkchangesample.network.receiver.InternetStateChangeListener
 import com.example.networkchangesample.network.receiver.NetworkService
+import java.lang.ref.WeakReference
 
 abstract class BaseActivity : AppCompatActivity() {
 
     private var networkListeners: MutableList<InternetStateChangeListener> = mutableListOf()
 
     private var mService: Messenger? = null
-    private val mMessenger: Messenger by lazy { Messenger(IncomingHandler()) }
+    private val mMessenger: Messenger by lazy { Messenger(IncomingHandler(this)) }
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -97,23 +97,27 @@ abstract class BaseActivity : AppCompatActivity() {
         networkListeners.forEach(InternetStateChangeListener::onCellularDisabled)
     }
 
-    @SuppressLint("HandlerLeak")
-    internal inner class IncomingHandler : Handler() {
+    class IncomingHandler(activity: BaseActivity) : Handler() {
+
+        private val activityReference: WeakReference<BaseActivity> = WeakReference(activity)
+
         override fun handleMessage(msg: Message) {
-            when (msg.what) {
-                NetworkService.MSG_SET_VALUE -> {
-                    if (getMessageValue(msg)) internetIsAvailable()
-                    else internetIsUnAvailable()
+            activityReference.get()?.let { activity ->
+                when (msg.what) {
+                    NetworkService.MSG_SET_VALUE -> {
+                        if (getMessageValue(msg)) activity.internetIsAvailable()
+                        else activity.internetIsUnAvailable()
+                    }
+                    NetworkService.MSG_WIFI_RADIO -> {
+                        if (getMessageValue(msg)) activity.wifiConnected()
+                        else activity.wifiDisconnected()
+                    }
+                    NetworkService.MSG_CELLULAR_RADIO -> {
+                        if (getMessageValue(msg)) activity.cellularConnected()
+                        else activity.cellularDisconnected()
+                    }
+                    else -> super.handleMessage(msg)
                 }
-                NetworkService.MSG_WIFI_RADIO -> {
-                    if (getMessageValue(msg)) wifiConnected()
-                    else wifiDisconnected()
-                }
-                NetworkService.MSG_CELLULAR_RADIO -> {
-                    if (getMessageValue(msg)) cellularConnected()
-                    else cellularDisconnected()
-                }
-                else -> super.handleMessage(msg)
             }
         }
 

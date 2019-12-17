@@ -27,12 +27,14 @@ class HomeFragment : BaseNetworkFragment() {
 
     override fun onCellularEnabled() {
         super.onCellularEnabled()
-        view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.cellular_network_available)
+        view?.findViewById<TextView>(R.id.text)?.text =
+            getString(R.string.cellular_network_available)
     }
 
     override fun onCellularDisabled() {
         super.onCellularDisabled()
-        view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.cellular_network_unavailable)
+        view?.findViewById<TextView>(R.id.text)?.text =
+            getString(R.string.cellular_network_unavailable)
     }
 
     override fun onInternetEnabled() {
