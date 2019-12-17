@@ -17,7 +17,9 @@ object NetworkUtils {
                         NetworkCapabilities.TRANSPORT_CELLULAR
                     ) == true
                 ) {
-                    return true
+                    return connectionManager.getNetworkCapabilities(it)?.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_INTERNET
+                    ) == true
                 }
             }
             return false
@@ -32,7 +34,11 @@ object NetworkUtils {
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             connectionManager.allNetworks.forEach {
-                if (connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true) {
+                if (connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+                    && connectionManager.getNetworkCapabilities(it)?.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_INTERNET
+                    ) == true
+                ) {
                     return true
                 }
             }
@@ -48,7 +54,11 @@ object NetworkUtils {
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             connectionManager.allNetworks.forEach {
-                if (connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true) {
+                if (connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
+                    && connectionManager.getNetworkCapabilities(it)?.hasCapability(
+                        NetworkCapabilities.NET_CAPABILITY_INTERNET
+                    ) == true
+                ) {
                     return true
                 }
             }
