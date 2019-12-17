@@ -8,17 +8,29 @@ abstract class BaseNetworkFragment : Fragment(), InternetStateChangeListener {
 
     override fun onResume() {
         super.onResume()
-        (requireActivity() as BaseActivity).networkListeners.add(this)
+        (requireActivity() as BaseActivity).registerNetworkStateListener(this)
     }
 
     override fun onPause() {
         super.onPause()
-        (requireActivity() as BaseActivity).networkListeners.remove(this)
+        (requireActivity() as BaseActivity).unregisterNetworkStateListener(this)
     }
 
-    override fun onInternetEnable() {
+    override fun onInternetEnabled() {
     }
 
-    override fun onInternetDisable() {
+    override fun onInternetDisabled() {
+    }
+
+    override fun onWifiEnabled() {
+    }
+
+    override fun onWifiDisabled() {
+    }
+
+    override fun onCellularEnabled() {
+    }
+
+    override fun onCellularDisabled() {
     }
 }

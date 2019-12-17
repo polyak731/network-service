@@ -1,6 +1,10 @@
 package com.example.networkchangesample.network.receiver
 
 interface InternetStateChangeListener {
-    fun onInternetEnable()
-    fun onInternetDisable()
+    fun onInternetEnabled()
+    fun onInternetDisabled()
+    fun onWifiEnabled()
+    fun onWifiDisabled()
+    fun onCellularEnabled()
+    fun onCellularDisabled()
 }

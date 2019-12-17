@@ -3,4 +3,10 @@
 
     <string name="network_available">Network available</string>
     <string name="network_unavailable">Network unavailable</string>
+
+    <string name="wifi_network_available">Wifi network available</string>
+    <string name="wifi_network_unavailable">Wifi network unavailable</string>
+
+    <string name="cellular_network_available">Cellular network available</string>
+    <string name="cellular_network_unavailable">Cellular network unavailable</string>
 </resources>

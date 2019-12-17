@@ -13,15 +13,35 @@ class HomeFragment : BaseNetworkFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_home, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_home, container, false)
+
+    override fun onWifiEnabled() {
+        super.onWifiEnabled()
+        view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.wifi_network_available)
     }
 
-    override fun onInternetEnable() {
+    override fun onWifiDisabled() {
+        super.onWifiDisabled()
+        view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.wifi_network_unavailable)
+    }
+
+    override fun onCellularEnabled() {
+        super.onCellularEnabled()
+        view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.cellular_network_available)
+    }
+
+    override fun onCellularDisabled() {
+        super.onCellularDisabled()
+        view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.cellular_network_unavailable)
+    }
+
+    override fun onInternetEnabled() {
+        super.onInternetEnabled()
         view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.network_available)
     }
 
-    override fun onInternetDisable() {
+    override fun onInternetDisabled() {
+        super.onInternetDisabled()
         view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.network_unavailable)
     }
 }
