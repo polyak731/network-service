@@ -89,24 +89,29 @@ class NetworkService : Service() {
         }
 
         private fun handleNetworkMessage(msg: Message) {
-            println("handleNetworkMessage")
             serviceReference.get()?.let { service ->
 
                 currentNetworkClass = when {
                     NetworkUtils.checkWifiState(service)
                             || (NetworkUtils.checkWifiState(service) && NetworkUtils.checkCellularState(service))-> {
+                        if (currentNetworkClass == NetworkClass.Cellular) notifyClients(MSG_CELLULAR_RADIO, false)
                         notifyClients(MSG_WIFI_RADIO, true)
                         NetworkClass.WiFi
                     }
                     NetworkUtils.checkCellularState(service) -> {
+                        if (currentNetworkClass == NetworkClass.WiFi) notifyClients(MSG_WIFI_RADIO, false)
                         notifyClients(MSG_CELLULAR_RADIO, true)
                         NetworkClass.Cellular
                     }
                     NetworkUtils.checkNetworkState(service) -> {
+                        if (currentNetworkClass == NetworkClass.WiFi) notifyClients(MSG_WIFI_RADIO, false)
+                        if (currentNetworkClass == NetworkClass.Cellular) notifyClients(MSG_CELLULAR_RADIO, false)
                         notifyClients(MSG_DEFAULT, true)
                         NetworkClass.Other
                     }
                     else -> {
+                        if (currentNetworkClass == NetworkClass.WiFi) notifyClients(MSG_WIFI_RADIO, false)
+                        if (currentNetworkClass == NetworkClass.Cellular) notifyClients(MSG_CELLULAR_RADIO, false)
                         notifyClients(MSG_DEFAULT, msg.obj)
                         NetworkClass.No
                     }
