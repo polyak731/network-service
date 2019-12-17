@@ -21,10 +21,8 @@ abstract class BaseActivity : AppCompatActivity() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             mService = Messenger(service)
             try {
-                var msg = Message.obtain(null, NetworkService.MSG_REGISTER_CLIENT)
+                val msg = Message.obtain(null, NetworkService.MSG_REGISTER_CLIENT)
                 msg.replyTo = mMessenger
-                mService?.send(msg)
-                msg = Message.obtain(null, NetworkService.MSG_SET_VALUE, this.hashCode(), 0)
                 mService?.send(msg)
             } catch (e: RemoteException) {
                 /**NOP*/
@@ -33,10 +31,8 @@ abstract class BaseActivity : AppCompatActivity() {
 
         override fun onServiceDisconnected(name: ComponentName?) {
             try {
-                var msg = Message.obtain(null, NetworkService.MSG_UNREGISTER_CLIENT)
+                val msg = Message.obtain(null, NetworkService.MSG_UNREGISTER_CLIENT)
                 msg.replyTo = mMessenger
-                mService?.send(msg)
-                msg = Message.obtain(null, NetworkService.MSG_SET_VALUE, this.hashCode(), 0)
                 mService?.send(msg)
             } catch (e: RemoteException) {
                 /**NOP*/
