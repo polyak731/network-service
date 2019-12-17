@@ -11,17 +11,16 @@ object NetworkUtils {
         val connectionManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            var isWifiConnected = false
-            var isCellularConnected = false
             connectionManager.allNetworks.forEach {
-                isWifiConnected =
-                    connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
-                        ?: false
-                isCellularConnected =
-                    connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
-                        ?: false
+                if (connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+                    || connectionManager.getNetworkCapabilities(it)?.hasTransport(
+                        NetworkCapabilities.TRANSPORT_CELLULAR
+                    ) == true
+                ) {
+                    return true
+                }
             }
-            isCellularConnected || isWifiConnected
+            return false
         } else {
             val networkInfo = connectionManager.activeNetworkInfo
             networkInfo != null && networkInfo.isConnected
@@ -32,13 +31,12 @@ object NetworkUtils {
         val connectionManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            var isWifiConnected = false
             connectionManager.allNetworks.forEach {
-                isWifiConnected =
-                    connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
-                        ?: false
+                if (connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true) {
+                    return true
+                }
             }
-            isWifiConnected
+            return false
         } else {
             val networkInfo = connectionManager.activeNetworkInfo
             networkInfo != null && networkInfo.type == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected
@@ -49,13 +47,12 @@ object NetworkUtils {
         val connectionManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            var isCellularConnected = false
             connectionManager.allNetworks.forEach {
-                isCellularConnected =
-                    connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
-                        ?: false
+                if (connectionManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true) {
+                    return true
+                }
             }
-            isCellularConnected
+            return false
         } else {
             val networkInfo = connectionManager.activeNetworkInfo
             networkInfo != null && networkInfo.type == ConnectivityManager.TYPE_MOBILE && networkInfo.isConnected
