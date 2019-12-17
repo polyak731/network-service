@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
-import android.net.Network
 import android.net.NetworkRequest
 import android.os.*
 import androidx.annotation.RequiresApi
@@ -28,6 +27,8 @@ class NetworkService : Service() {
     private val messenger = Messenger(IncomingHandler())
     private var clients = arrayListOf<Messenger>()
     private val networkReceiver = NetworkChangeReceiver(messenger)
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private val networkCallback = NetworkChangeCallback(messenger)
     private var currentNetworkClass: NetworkClass = NetworkClass.No
 
     @Suppress("DEPRECATION")
@@ -36,17 +37,6 @@ class NetworkService : Service() {
             registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
         } catch (e: Exception) {
             /**NOP*/
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) {
-            messenger.send(Message.obtain(null, MSG_SET_VALUE, true))
-        }
-
-        override fun onLost(network: Network) {
-            messenger.send(Message.obtain(null, MSG_SET_VALUE, false))
         }
     }
 
