@@ -24,6 +24,9 @@ abstract class BaseActivity : AppCompatActivity() {
                 val msg = Message.obtain(null, NetworkService.MSG_REGISTER_CLIENT)
                 msg.replyTo = mMessenger
                 mService?.send(msg)
+                val message = Message.obtain(null, NetworkService.MSG_REQUEST, this.hashCode(), 0)
+                message.replyTo = mMessenger
+                mService?.send(message)
             } catch (e: RemoteException) {
                 /**NOP*/
             }
