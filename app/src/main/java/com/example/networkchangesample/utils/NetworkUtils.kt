@@ -20,8 +20,7 @@ object NetworkUtils {
             }
             return false
         } else {
-            val networkInfo = context.connectivityManager.activeNetworkInfo
-            networkInfo != null && networkInfo.isConnected
+            context.connectivityManager.activeNetworkInfo?.isConnected ?: false
         }
     }
 
@@ -38,8 +37,9 @@ object NetworkUtils {
             }
             return false
         } else {
-            val networkInfo = context.connectivityManager.activeNetworkInfo
-            networkInfo != null && networkInfo.type == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected
+            with(context.connectivityManager.activeNetworkInfo) {
+                this?.type == ConnectivityManager.TYPE_WIFI && isConnected
+            }
         }
     }
 
@@ -56,8 +56,9 @@ object NetworkUtils {
             }
             return false
         } else {
-            val networkInfo = context.connectivityManager.activeNetworkInfo
-            networkInfo != null && networkInfo.type == ConnectivityManager.TYPE_MOBILE && networkInfo.isConnected
+            with(context.connectivityManager.activeNetworkInfo) {
+                this?.type == ConnectivityManager.TYPE_MOBILE && isConnected
+            }
         }
     }
 
