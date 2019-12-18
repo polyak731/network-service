@@ -2,23 +2,27 @@ package com.example.networkchangesample.network.receiver
 
 import android.net.ConnectivityManager
 import android.net.Network
-import android.os.Build
-import android.os.Handler
-import android.os.Message
-import android.os.Messenger
+import android.os.*
+import androidx.annotation.MainThread
 import androidx.annotation.RequiresApi
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-class NetworkChangeCallback(private val messenger: Messenger) :
-    ConnectivityManager.NetworkCallback() {
+class NetworkChangeCallback(private val messenger: Messenger) : ConnectivityManager.NetworkCallback() {
+
+    private var action: Runnable = Runnable {
+        messenger.send(Message.obtain(null, NetworkService.MSG_SET_VALUE, false))
+    }
+
+    private var mainHandler: Handler = Handler(Looper.getMainLooper())
+
     override fun onAvailable(network: Network) {
+        mainHandler.removeCallbacks(action)
         messenger.send(Message.obtain(null, NetworkService.MSG_SET_VALUE, true))
     }
 
     override fun onLost(network: Network) {
         //TODO: looks like android issue, when we trying to check network for cellular when it's lost it's actually active.
-        Handler().postDelayed({
-            messenger.send(Message.obtain(null, NetworkService.MSG_SET_VALUE, false))
-        }, 500)
+        mainHandler.removeCallbacks(action)
+        mainHandler.postDelayed(action, 500)
     }
 }
