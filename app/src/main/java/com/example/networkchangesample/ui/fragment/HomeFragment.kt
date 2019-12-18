@@ -25,27 +25,13 @@ class HomeFragment : BaseNetworkFragment() {
     private fun handleNetworkState(networkClass: NetworkService.NetworkClass) {
         view?.findViewById<TextView>(R.id.text)?.text = getString(
             when (networkClass) {
-                NetworkService.NetworkClass.WiFiEnabled -> {
-                    R.string.wifi_network_available
-                }
-                NetworkService.NetworkClass.WiFiDisabled -> {
-                    R.string.wifi_network_unavailable
-                }
-                NetworkService.NetworkClass.OtherEnabled -> {
-                    R.string.network_available
-                }
-                NetworkService.NetworkClass.OtherDisabled -> {
-                    R.string.network_unavailable
-                }
-                NetworkService.NetworkClass.CellularEnabled -> {
-                    R.string.cellular_network_available
-                }
-                NetworkService.NetworkClass.CellularDisabled -> {
-                    R.string.cellular_network_unavailable
-                }
-                NetworkService.NetworkClass.NoNetwork -> {
-                    R.string.network_unavailable
-                }
+                NetworkService.NetworkClass.WiFiEnabled -> R.string.wifi_network_available
+                NetworkService.NetworkClass.WiFiDisabled -> R.string.wifi_network_unavailable
+                NetworkService.NetworkClass.OtherEnabled -> R.string.network_available
+                NetworkService.NetworkClass.OtherDisabled -> R.string.network_unavailable
+                NetworkService.NetworkClass.CellularEnabled -> R.string.cellular_network_available
+                NetworkService.NetworkClass.CellularDisabled -> R.string.cellular_network_unavailable
+                NetworkService.NetworkClass.NoNetwork -> R.string.network_unavailable
             }
         )
     }

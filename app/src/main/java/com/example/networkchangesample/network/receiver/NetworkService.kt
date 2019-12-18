@@ -138,7 +138,7 @@ class NetworkService : Service() {
                 listOf(CellularEnabled, WiFiEnabled, OtherEnabled).contains(networkClass)
 
             fun mirror(networkClass: NetworkClass) =
-                if (networkClass == NoNetwork) NoNetwork else values()[networkClass.ordinal + 1]
+                if (networkClass == NoNetwork) OtherEnabled else values()[networkClass.ordinal + 1]
         }
     }
 }
