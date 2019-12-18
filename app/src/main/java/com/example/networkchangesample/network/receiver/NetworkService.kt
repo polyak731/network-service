@@ -57,37 +57,14 @@ class NetworkService : Service() {
         private fun handleNetworkMessage() {
             serviceReference.get()?.let { service ->
 
+                notifyClients(NetworkClass.mirror(currentNetworkClass))
                 currentNetworkClass = when {
                     NetworkUtils.checkWifiState(service)
                             || (NetworkUtils.checkWifiState(service)
-                            && NetworkUtils.checkCellularState(service)) -> {
-                        if (currentNetworkClass == NetworkClass.CellularEnabled)
-                            notifyClients(NetworkClass.CellularDisabled)
-                        if (currentNetworkClass == NetworkClass.OtherEnabled)
-                            notifyClients(NetworkClass.OtherDisabled)
-                        NetworkClass.WiFiEnabled
-                    }
-                    NetworkUtils.checkCellularState(service) -> {
-                        if (currentNetworkClass == NetworkClass.WiFiEnabled)
-                            notifyClients(NetworkClass.WiFiDisabled)
-                        if (currentNetworkClass == NetworkClass.OtherEnabled)
-                            notifyClients(NetworkClass.OtherDisabled)
-                        NetworkClass.CellularEnabled
-                    }
-                    NetworkUtils.checkNetworkState(service) -> {
-                        if (currentNetworkClass == NetworkClass.WiFiEnabled)
-                            notifyClients(NetworkClass.WiFiDisabled)
-                        if (currentNetworkClass == NetworkClass.CellularEnabled)
-                            notifyClients(NetworkClass.CellularDisabled)
-                        NetworkClass.OtherEnabled
-                    }
-                    else -> {
-                        if (currentNetworkClass == NetworkClass.WiFiEnabled)
-                            notifyClients(NetworkClass.WiFiDisabled)
-                        if (currentNetworkClass == NetworkClass.CellularEnabled)
-                            notifyClients(NetworkClass.CellularDisabled)
-                        NetworkClass.NoNetwork
-                    }
+                            && NetworkUtils.checkCellularState(service)) -> NetworkClass.WiFiEnabled
+                    NetworkUtils.checkCellularState(service) -> NetworkClass.CellularEnabled
+                    NetworkUtils.checkNetworkState(service) -> NetworkClass.OtherEnabled
+                    else -> NetworkClass.NoNetwork
                 }
                 notifyClients(currentNetworkClass)
             }
@@ -159,6 +136,9 @@ class NetworkService : Service() {
 
             fun isEnabledState(networkClass: NetworkClass) =
                 listOf(CellularEnabled, WiFiEnabled, OtherEnabled).contains(networkClass)
+
+            fun mirror(networkClass: NetworkClass) =
+                if (networkClass == NoNetwork) NoNetwork else values()[networkClass.ordinal + 1]
         }
     }
 }
