@@ -7,6 +7,7 @@ import android.os.Build
 
 object NetworkUtils {
 
+    @Suppress("DEPRECATION")
     fun checkNetworkState(context: Context): Boolean {
         val connectionManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -29,6 +30,7 @@ object NetworkUtils {
         }
     }
 
+    @Suppress("DEPRECATION")
     fun checkWifiState(context: Context): Boolean {
         val connectionManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -49,6 +51,7 @@ object NetworkUtils {
         }
     }
 
+    @Suppress("DEPRECATION")
     fun checkCellularState(context: Context): Boolean {
         val connectionManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

@@ -10,12 +10,6 @@ import com.example.networkchangesample.utils.NetworkUtils.checkNetworkState
 class NetworkChangeReceiver(private val messenger: Messenger) : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent?) {
-        messenger.send(
-            Message.obtain(
-                null,
-                NetworkService.MSG_SET_VALUE,
-                checkNetworkState(context)
-            )
-        )
+        messenger.send(Message.obtain(null, NetworkService.MSG_SET_VALUE, checkNetworkState(context)))
     }
 }

@@ -45,90 +45,66 @@ class NetworkService : Service() {
                 MSG_REGISTER_CLIENT -> clients.add(msg.replyTo)
                 MSG_UNREGISTER_CLIENT -> clients.remove(msg.replyTo)
                 MSG_REQUEST -> handleSingleMessage(msg)
-                MSG_SET_VALUE -> handleNetworkMessage(msg)
+                MSG_SET_VALUE -> handleNetworkMessage()
                 else -> super.handleMessage(msg)
             }
         }
 
         private fun handleSingleMessage(msg: Message) {
-            serviceReference.get()?.let { service ->
-                notifyClient(
-                    msg.replyTo,
-                    MSG_SET_VALUE,
-                    currentNetworkClass
-                )
-            }
+            serviceReference.get()?.let { notifyClient(msg.replyTo, currentNetworkClass) }
         }
 
-        private fun handleNetworkMessage(msg: Message) {
+        private fun handleNetworkMessage() {
             serviceReference.get()?.let { service ->
 
                 currentNetworkClass = when {
                     NetworkUtils.checkWifiState(service)
-                            || (NetworkUtils.checkWifiState(service) && NetworkUtils.checkCellularState(
-                        service
-                    )) -> {
-                        if (currentNetworkClass == NetworkClass.CellularEnabled) notifyClients(
-                            MSG_SET_VALUE,
-                            NetworkClass.CellularDisabled
-                        )
-                        if (currentNetworkClass == NetworkClass.OtherEnabled) notifyClients(
-                            MSG_SET_VALUE,
-                            NetworkClass.OtherDisabled
-                        )
+                            || (NetworkUtils.checkWifiState(service)
+                            && NetworkUtils.checkCellularState(service)) -> {
+                        if (currentNetworkClass == NetworkClass.CellularEnabled)
+                            notifyClients(NetworkClass.CellularDisabled)
+                        if (currentNetworkClass == NetworkClass.OtherEnabled)
+                            notifyClients(NetworkClass.OtherDisabled)
                         NetworkClass.WiFiEnabled
                     }
                     NetworkUtils.checkCellularState(service) -> {
-                        if (currentNetworkClass == NetworkClass.WiFiEnabled) notifyClients(
-                            MSG_SET_VALUE,
-                            NetworkClass.WiFiDisabled
-                        )
-                        if (currentNetworkClass == NetworkClass.OtherEnabled) notifyClients(
-                            MSG_SET_VALUE,
-                            NetworkClass.OtherDisabled
-                        )
+                        if (currentNetworkClass == NetworkClass.WiFiEnabled)
+                            notifyClients(NetworkClass.WiFiDisabled)
+                        if (currentNetworkClass == NetworkClass.OtherEnabled)
+                            notifyClients(NetworkClass.OtherDisabled)
                         NetworkClass.CellularEnabled
                     }
                     NetworkUtils.checkNetworkState(service) -> {
-                        if (currentNetworkClass == NetworkClass.WiFiEnabled) notifyClients(
-                            MSG_SET_VALUE,
-                            NetworkClass.WiFiDisabled
-                        )
-                        if (currentNetworkClass == NetworkClass.CellularEnabled) notifyClients(
-                            MSG_SET_VALUE,
-                            NetworkClass.CellularDisabled
-                        )
+                        if (currentNetworkClass == NetworkClass.WiFiEnabled)
+                            notifyClients(NetworkClass.WiFiDisabled)
+                        if (currentNetworkClass == NetworkClass.CellularEnabled)
+                            notifyClients(NetworkClass.CellularDisabled)
                         NetworkClass.OtherEnabled
                     }
                     else -> {
-                        if (currentNetworkClass == NetworkClass.WiFiEnabled) notifyClients(
-                            MSG_SET_VALUE,
-                            NetworkClass.WiFiDisabled
-                        )
-                        if (currentNetworkClass == NetworkClass.CellularEnabled) notifyClients(
-                            MSG_SET_VALUE,
-                            NetworkClass.CellularDisabled
-                        )
+                        if (currentNetworkClass == NetworkClass.WiFiEnabled)
+                            notifyClients(NetworkClass.WiFiDisabled)
+                        if (currentNetworkClass == NetworkClass.CellularEnabled)
+                            notifyClients(NetworkClass.CellularDisabled)
                         NetworkClass.NoNetwork
                     }
                 }
-                notifyClients(MSG_SET_VALUE, currentNetworkClass)
+                notifyClients(currentNetworkClass)
             }
         }
 
-        private fun notifyClients(what: Int, obj: Any?) {
+        private fun notifyClients(obj: Any?) {
             for (i in clients.size - 1 downTo 0) {
                 try {
-                    notifyClient(clients[i], what, obj)
+                    notifyClient(clients[i], obj)
                 } catch (e: RemoteException) {
                     clients.removeAt(i)
                 }
             }
         }
 
-        private fun notifyClient(messenger: Messenger, what: Int, obj: Any?) {
-            val message = Message.obtain(null, what, obj)
-            messenger.send(message)
+        private fun notifyClient(messenger: Messenger, obj: Any?) {
+            messenger.send(Message.obtain(null, MSG_SET_VALUE, obj))
         }
     }
 
@@ -136,7 +112,7 @@ class NetworkService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             registerCallBack()
         } else {
             registerFilter()
@@ -167,10 +143,7 @@ class NetworkService : Service() {
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val builder = NetworkRequest.Builder()
         networkCallback = NetworkChangeCallback(messenger)
-        connectivityManager.registerNetworkCallback(
-            builder.build(),
-            networkCallback
-        )
+        connectivityManager.registerNetworkCallback(builder.build(), networkCallback)
     }
 
     enum class NetworkClass {

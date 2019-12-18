@@ -24,9 +24,7 @@ abstract class BaseActivity : AppCompatActivity() {
                 val msg = Message.obtain(null, NetworkService.MSG_REGISTER_CLIENT)
                 msg.replyTo = mMessenger
                 mService?.send(msg)
-                val message = Message.obtain(null, NetworkService.MSG_REQUEST, this.hashCode(), 0)
-                message.replyTo = mMessenger
-                mService?.send(message)
+                sendSingleMessageToService()
             } catch (e: RemoteException) {
                 /**NOP*/
             }
@@ -46,9 +44,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     fun registerNetworkStateListener(listener: InternetStateChangeListener) {
         networkListeners.add(listener)
-        val message = Message.obtain(null, NetworkService.MSG_REQUEST, this.hashCode(), 0)
-        message.replyTo = mMessenger
-        mService?.send(message)
+        sendSingleMessageToService()
     }
 
     fun unregisterNetworkStateListener(listener: InternetStateChangeListener) {
@@ -81,6 +77,12 @@ abstract class BaseActivity : AppCompatActivity() {
         networkListeners.forEach { it.onInternetDisabled(networkState) }
     }
 
+    private fun sendSingleMessageToService() {
+        val message = Message.obtain(null, NetworkService.MSG_REQUEST, this.hashCode(), 0)
+        message.replyTo = mMessenger
+        mService?.send(message)
+    }
+
     class IncomingHandler(activity: BaseActivity) : Handler() {
 
         private val activityReference: WeakReference<BaseActivity> = WeakReference(activity)
@@ -90,9 +92,8 @@ abstract class BaseActivity : AppCompatActivity() {
                 when (msg.what) {
                     NetworkService.MSG_SET_VALUE -> {
                         val networkState = getMessageValue(msg)
-                        if (NetworkService.NetworkClass.isEnabledState(networkState)) activity.internetConnectionEnabled(
-                            networkState
-                        )
+                        if (NetworkService.NetworkClass.isEnabledState(networkState))
+                            activity.internetConnectionEnabled(networkState)
                         else activity.internetConnectionDisabled(networkState)
                     }
                     else -> super.handleMessage(msg)
