@@ -52,7 +52,12 @@ class NetworkService : Service() {
         }
 
         private fun handleSingleMessage(msg: Message) {
-            serviceReference.get()?.let { notifyClient(msg.replyTo, currentNetworkClass) }
+            serviceReference.get()?.let { notifyClientWithMessage(msg.replyTo,
+                Message.obtain(null, MSG_SET_VALUE, currentNetworkClass)
+                    .apply {
+                        arg1 = msg.arg1
+                        arg2 = msg.arg2
+                    }) }
         }
 
         private fun handleNetworkMessage() {
@@ -83,6 +88,10 @@ class NetworkService : Service() {
 
         private fun notifyClient(messenger: Messenger, obj: Any?) {
             messenger.send(Message.obtain(null, MSG_SET_VALUE, obj))
+        }
+
+        private fun notifyClientWithMessage(messenger: Messenger, message: Message) {
+            messenger.send(message)
         }
     }
 

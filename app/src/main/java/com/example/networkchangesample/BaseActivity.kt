@@ -44,7 +44,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     fun registerNetworkStateListener(listener: InternetStateChangeListener) {
         networkListeners.add(listener)
-        sendSingleMessageToService()
+        sendSingleMessageForSingleSubscriber(networkListeners.indexOf(listener))
     }
 
     fun unregisterNetworkStateListener(listener: InternetStateChangeListener) {
@@ -77,10 +77,24 @@ abstract class BaseActivity : AppCompatActivity() {
         networkListeners.forEach { it.onInternetDisabled(networkState) }
     }
 
+    private fun notifyListenerWithHashCodeInternetConnected(arg: Int, networkState: NetworkService.NetworkClass) {
+        networkListeners[arg].onInternetEnabled(networkState)
+    }
+
+    private fun notifyListenerWithHashCodeInternetDisconnected(arg: Int, networkState: NetworkService.NetworkClass) {
+        networkListeners[arg].onInternetDisabled(networkState)
+    }
+
     private fun sendSingleMessageToService() {
-        val message = Message.obtain(null, NetworkService.MSG_REQUEST, this.hashCode(), 0)
-        message.replyTo = mMessenger
-        mService?.send(message)
+        mService?.send(Message
+            .obtain(null, NetworkService.MSG_REQUEST)
+            .apply { replyTo = mMessenger })
+    }
+
+    private fun sendSingleMessageForSingleSubscriber(arg: Int) {
+        mService?.send(Message
+            .obtain(null, NetworkService.MSG_REQUEST)
+            .apply { arg2 = arg })
     }
 
     class IncomingHandler(activity: BaseActivity) : Handler() {
@@ -93,8 +107,16 @@ abstract class BaseActivity : AppCompatActivity() {
                     NetworkService.MSG_SET_VALUE -> {
                         val networkState = getMessageValue(msg)
                         if (NetworkService.NetworkClass.isEnabledState(networkState))
-                            activity.internetConnectionEnabled(networkState)
-                        else activity.internetConnectionDisabled(networkState)
+                            if (msg.arg2 != 0) {
+                                activity.notifyListenerWithHashCodeInternetConnected(msg.arg2, networkState)
+                            } else {
+                                activity.internetConnectionEnabled(networkState)
+                            }
+                        else if (msg.arg2 != 0) {
+                            activity.notifyListenerWithHashCodeInternetDisconnected(msg.arg2, networkState)
+                        } else {
+                            activity.internetConnectionDisabled(networkState)
+                        }
                     }
                     else -> super.handleMessage(msg)
                 }
