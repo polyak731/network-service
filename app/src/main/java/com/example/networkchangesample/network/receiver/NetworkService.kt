@@ -10,6 +10,7 @@ import android.net.NetworkRequest
 import android.os.*
 import androidx.annotation.RequiresApi
 import com.example.networkchangesample.utils.NetworkUtils
+import com.example.networkchangesample.utils.NetworkUtils.connectivityManager
 import java.lang.ref.WeakReference
 
 class NetworkService : Service() {
@@ -116,11 +117,8 @@ class NetworkService : Service() {
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun registerCallBack() {
-        val connectivityManager =
-            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val builder = NetworkRequest.Builder()
         networkCallback = NetworkChangeCallback(messenger)
-        connectivityManager.registerNetworkCallback(builder.build(), networkCallback)
+        connectivityManager.registerNetworkCallback(NetworkRequest.Builder().build(), networkCallback)
     }
 
     enum class NetworkClass {
