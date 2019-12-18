@@ -78,11 +78,15 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     private fun notifyListenerWithHashCodeInternetConnected(arg: Int, networkState: NetworkService.NetworkClass) {
-        networkListeners[arg].onInternetEnabled(networkState)
+        if (networkListeners.lastIndex >= arg || arg >= 0) {
+            networkListeners[arg].onInternetEnabled(networkState)
+        }
     }
 
     private fun notifyListenerWithHashCodeInternetDisconnected(arg: Int, networkState: NetworkService.NetworkClass) {
-        networkListeners[arg].onInternetDisabled(networkState)
+        if (networkListeners.lastIndex >= arg || arg >= 0) {
+            networkListeners[arg].onInternetDisabled(networkState)
+        }
     }
 
     private fun sendSingleMessageToService() {
