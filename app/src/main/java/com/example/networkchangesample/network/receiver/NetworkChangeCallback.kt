@@ -7,7 +7,8 @@ import androidx.annotation.AnyThread
 import androidx.annotation.RequiresApi
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-class NetworkChangeCallback(private val messenger: Messenger) : ConnectivityManager.NetworkCallback() {
+class NetworkChangeCallback(private val messenger: Messenger) :
+    ConnectivityManager.NetworkCallback() {
 
     private var action: Runnable = Runnable {
         messenger.send(Message.obtain(null, NetworkService.MSG_SET_VALUE, false))

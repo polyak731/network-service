@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.example.networkchangesample.R
+import com.example.networkchangesample.network.receiver.NetworkService
 
 class HomeFragment : BaseNetworkFragment() {
 
@@ -15,35 +16,37 @@ class HomeFragment : BaseNetworkFragment() {
         savedInstanceState: Bundle?
     ): View? = inflater.inflate(R.layout.fragment_home, container, false)
 
-    override fun onWifiEnabled() {
-        super.onWifiEnabled()
-        view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.wifi_network_available)
-    }
+    override fun onInternetEnabled(networkClass: NetworkService.NetworkClass) =
+        handleNetworkState(networkClass)
 
-    override fun onWifiDisabled() {
-        super.onWifiDisabled()
-        view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.wifi_network_unavailable)
-    }
+    override fun onInternetDisabled(networkClass: NetworkService.NetworkClass) =
+        handleNetworkState(networkClass)
 
-    override fun onCellularEnabled() {
-        super.onCellularEnabled()
-        view?.findViewById<TextView>(R.id.text)?.text =
-            getString(R.string.cellular_network_available)
-    }
-
-    override fun onCellularDisabled() {
-        super.onCellularDisabled()
-        view?.findViewById<TextView>(R.id.text)?.text =
-            getString(R.string.cellular_network_unavailable)
-    }
-
-    override fun onInternetEnabled() {
-        super.onInternetEnabled()
-        view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.network_available)
-    }
-
-    override fun onInternetDisabled() {
-        super.onInternetDisabled()
-        view?.findViewById<TextView>(R.id.text)?.text = getString(R.string.network_unavailable)
+    private fun handleNetworkState(networkClass: NetworkService.NetworkClass) {
+        view?.findViewById<TextView>(R.id.text)?.text = getString(
+            when (networkClass) {
+                NetworkService.NetworkClass.WiFiEnabled -> {
+                    R.string.wifi_network_available
+                }
+                NetworkService.NetworkClass.WiFiDisabled -> {
+                    R.string.wifi_network_unavailable
+                }
+                NetworkService.NetworkClass.OtherEnabled -> {
+                    R.string.network_available
+                }
+                NetworkService.NetworkClass.OtherDisabled -> {
+                    R.string.network_unavailable
+                }
+                NetworkService.NetworkClass.CellularEnabled -> {
+                    R.string.cellular_network_available
+                }
+                NetworkService.NetworkClass.CellularDisabled -> {
+                    R.string.cellular_network_unavailable
+                }
+                NetworkService.NetworkClass.NoNetwork -> {
+                    R.string.network_unavailable
+                }
+            }
+        )
     }
 }

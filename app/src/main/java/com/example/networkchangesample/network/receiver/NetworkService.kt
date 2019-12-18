@@ -18,10 +18,7 @@ class NetworkService : Service() {
         const val MSG_REGISTER_CLIENT = 1
         const val MSG_UNREGISTER_CLIENT = 2
         const val MSG_SET_VALUE = 3
-        const val MSG_DEFAULT = 4
-        const val MSG_WIFI_RADIO = 5
-        const val MSG_CELLULAR_RADIO = 6
-        const val MSG_REQUEST = 7
+        const val MSG_REQUEST = 4
     }
 
     private val messenger = Messenger(IncomingHandler(this))
@@ -41,7 +38,7 @@ class NetworkService : Service() {
 
         private val serviceReference: WeakReference<NetworkService> = WeakReference(service)
         private var clients = arrayListOf<Messenger>()
-        private var currentNetworkClass: NetworkClass = NetworkClass.No
+        private var currentNetworkClass: NetworkClass = NetworkClass.NoNetwork
 
         override fun handleMessage(msg: Message) {
             when (msg.what) {
@@ -55,36 +52,11 @@ class NetworkService : Service() {
 
         private fun handleSingleMessage(msg: Message) {
             serviceReference.get()?.let { service ->
-                when (currentNetworkClass) {
-                    NetworkClass.Other -> {
-                        notifyClient(
-                            msg.replyTo,
-                            MSG_DEFAULT,
-                            NetworkUtils.checkNetworkState(service)
-                        )
-                    }
-                    NetworkClass.WiFi -> {
-                        notifyClient(
-                            msg.replyTo,
-                            MSG_WIFI_RADIO,
-                            NetworkUtils.checkWifiState(service)
-                        )
-                    }
-                    NetworkClass.Cellular -> {
-                        notifyClient(
-                            msg.replyTo,
-                            MSG_CELLULAR_RADIO,
-                            NetworkUtils.checkCellularState(service)
-                        )
-                    }
-                    NetworkClass.No -> {
-                        notifyClient(
-                            msg.replyTo,
-                            MSG_DEFAULT,
-                            NetworkUtils.checkNetworkState(service)
-                        )
-                    }
-                }
+                notifyClient(
+                    msg.replyTo,
+                    MSG_SET_VALUE,
+                    currentNetworkClass
+                )
             }
         }
 
@@ -93,29 +65,54 @@ class NetworkService : Service() {
 
                 currentNetworkClass = when {
                     NetworkUtils.checkWifiState(service)
-                            || (NetworkUtils.checkWifiState(service) && NetworkUtils.checkCellularState(service))-> {
-                        if (currentNetworkClass == NetworkClass.Cellular) notifyClients(MSG_CELLULAR_RADIO, false)
-                        notifyClients(MSG_WIFI_RADIO, true)
-                        NetworkClass.WiFi
+                            || (NetworkUtils.checkWifiState(service) && NetworkUtils.checkCellularState(
+                        service
+                    )) -> {
+                        if (currentNetworkClass == NetworkClass.CellularEnabled) notifyClients(
+                            MSG_SET_VALUE,
+                            NetworkClass.CellularDisabled
+                        )
+                        if (currentNetworkClass == NetworkClass.OtherEnabled) notifyClients(
+                            MSG_SET_VALUE,
+                            NetworkClass.OtherDisabled
+                        )
+                        NetworkClass.WiFiEnabled
                     }
                     NetworkUtils.checkCellularState(service) -> {
-                        if (currentNetworkClass == NetworkClass.WiFi) notifyClients(MSG_WIFI_RADIO, false)
-                        notifyClients(MSG_CELLULAR_RADIO, true)
-                        NetworkClass.Cellular
+                        if (currentNetworkClass == NetworkClass.WiFiEnabled) notifyClients(
+                            MSG_SET_VALUE,
+                            NetworkClass.WiFiDisabled
+                        )
+                        if (currentNetworkClass == NetworkClass.OtherEnabled) notifyClients(
+                            MSG_SET_VALUE,
+                            NetworkClass.OtherDisabled
+                        )
+                        NetworkClass.CellularEnabled
                     }
                     NetworkUtils.checkNetworkState(service) -> {
-                        if (currentNetworkClass == NetworkClass.WiFi) notifyClients(MSG_WIFI_RADIO, false)
-                        if (currentNetworkClass == NetworkClass.Cellular) notifyClients(MSG_CELLULAR_RADIO, false)
-                        notifyClients(MSG_DEFAULT, true)
-                        NetworkClass.Other
+                        if (currentNetworkClass == NetworkClass.WiFiEnabled) notifyClients(
+                            MSG_SET_VALUE,
+                            NetworkClass.WiFiDisabled
+                        )
+                        if (currentNetworkClass == NetworkClass.CellularEnabled) notifyClients(
+                            MSG_SET_VALUE,
+                            NetworkClass.CellularDisabled
+                        )
+                        NetworkClass.OtherEnabled
                     }
                     else -> {
-                        if (currentNetworkClass == NetworkClass.WiFi) notifyClients(MSG_WIFI_RADIO, false)
-                        if (currentNetworkClass == NetworkClass.Cellular) notifyClients(MSG_CELLULAR_RADIO, false)
-                        notifyClients(MSG_DEFAULT, msg.obj)
-                        NetworkClass.No
+                        if (currentNetworkClass == NetworkClass.WiFiEnabled) notifyClients(
+                            MSG_SET_VALUE,
+                            NetworkClass.WiFiDisabled
+                        )
+                        if (currentNetworkClass == NetworkClass.CellularEnabled) notifyClients(
+                            MSG_SET_VALUE,
+                            NetworkClass.CellularDisabled
+                        )
+                        NetworkClass.NoNetwork
                     }
                 }
+                notifyClients(MSG_SET_VALUE, currentNetworkClass)
             }
         }
 
@@ -176,10 +173,19 @@ class NetworkService : Service() {
         )
     }
 
-    private enum class NetworkClass {
-        Cellular,
-        WiFi,
-        Other,
-        No
+    enum class NetworkClass {
+        CellularEnabled,
+        CellularDisabled,
+        WiFiEnabled,
+        WiFiDisabled,
+        OtherEnabled,
+        OtherDisabled,
+        NoNetwork;
+
+        companion object {
+
+            fun isEnabledState(networkClass: NetworkClass) =
+                listOf(CellularEnabled, WiFiEnabled, OtherEnabled).contains(networkClass)
+        }
     }
 }

@@ -73,28 +73,12 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun internetIsUnAvailable() {
-        networkListeners.forEach(InternetStateChangeListener::onInternetDisabled)
+    private fun internetConnectionEnabled(networkState: NetworkService.NetworkClass) {
+        networkListeners.forEach { it.onInternetEnabled(networkState) }
     }
 
-    private fun internetIsAvailable() {
-        networkListeners.forEach(InternetStateChangeListener::onInternetEnabled)
-    }
-
-    private fun wifiConnected() {
-        networkListeners.forEach(InternetStateChangeListener::onWifiEnabled)
-    }
-
-    private fun wifiDisconnected() {
-        networkListeners.forEach(InternetStateChangeListener::onWifiDisabled)
-    }
-
-    private fun cellularConnected() {
-        networkListeners.forEach(InternetStateChangeListener::onCellularEnabled)
-    }
-
-    private fun cellularDisconnected() {
-        networkListeners.forEach(InternetStateChangeListener::onCellularDisabled)
+    private fun internetConnectionDisabled(networkState: NetworkService.NetworkClass) {
+        networkListeners.forEach { it.onInternetDisabled(networkState) }
     }
 
     class IncomingHandler(activity: BaseActivity) : Handler() {
@@ -104,24 +88,20 @@ abstract class BaseActivity : AppCompatActivity() {
         override fun handleMessage(msg: Message) {
             activityReference.get()?.let { activity ->
                 when (msg.what) {
-                    NetworkService.MSG_DEFAULT -> {
-                        if (getMessageValue(msg)) activity.internetIsAvailable()
-                        else activity.internetIsUnAvailable()
-                    }
-                    NetworkService.MSG_WIFI_RADIO -> {
-                        if (getMessageValue(msg)) activity.wifiConnected()
-                        else activity.wifiDisconnected()
-                    }
-                    NetworkService.MSG_CELLULAR_RADIO -> {
-                        if (getMessageValue(msg)) activity.cellularConnected()
-                        else activity.cellularDisconnected()
+                    NetworkService.MSG_SET_VALUE -> {
+                        val networkState = getMessageValue(msg)
+                        if (NetworkService.NetworkClass.isEnabledState(networkState)) activity.internetConnectionEnabled(
+                            networkState
+                        )
+                        else activity.internetConnectionDisabled(networkState)
                     }
                     else -> super.handleMessage(msg)
                 }
             }
         }
 
-        private fun getMessageValue(msg: Message): Boolean =
-            msg.obj?.let { it as? Boolean } ?: false
+        private fun getMessageValue(msg: Message): NetworkService.NetworkClass =
+            msg.obj?.let { it as? NetworkService.NetworkClass }
+                ?: NetworkService.NetworkClass.NoNetwork
     }
 }

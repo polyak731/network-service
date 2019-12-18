@@ -3,6 +3,7 @@ package com.example.networkchangesample.ui.fragment
 import androidx.fragment.app.Fragment
 import com.example.networkchangesample.BaseActivity
 import com.example.networkchangesample.network.receiver.InternetStateChangeListener
+import com.example.networkchangesample.network.receiver.NetworkService
 
 abstract class BaseNetworkFragment : Fragment(), InternetStateChangeListener {
 
@@ -16,21 +17,9 @@ abstract class BaseNetworkFragment : Fragment(), InternetStateChangeListener {
         (requireActivity() as BaseActivity).unregisterNetworkStateListener(this)
     }
 
-    override fun onInternetEnabled() {
+    override fun onInternetEnabled(networkClass: NetworkService.NetworkClass) {
     }
 
-    override fun onInternetDisabled() {
-    }
-
-    override fun onWifiEnabled() {
-    }
-
-    override fun onWifiDisabled() {
-    }
-
-    override fun onCellularEnabled() {
-    }
-
-    override fun onCellularDisabled() {
+    override fun onInternetDisabled(networkClass: NetworkService.NetworkClass) {
     }
 }
