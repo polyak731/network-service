@@ -2,7 +2,6 @@ package com.example.networkchangesample.network.receiver
 
 
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
@@ -41,8 +40,7 @@ class NetworkService : Service() {
         super.onDestroy()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             try {
-                (getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager)
-                    ?.unregisterNetworkCallback(networkCallback)
+                connectivityManager.unregisterNetworkCallback(networkCallback)
             } catch (e: Exception) {
                 /**NOP*/
             }
@@ -71,12 +69,16 @@ class NetworkService : Service() {
     }
 
     enum class NetworkClass {
+
         CellularEnabled,
         CellularDisabled,
+
         WiFiEnabled,
         WiFiDisabled,
+
         OtherEnabled,
         OtherDisabled,
+
         NoNetwork;
 
         companion object {
