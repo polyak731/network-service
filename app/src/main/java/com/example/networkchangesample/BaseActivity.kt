@@ -46,7 +46,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     fun registerNetworkStateListener(listener: InternetStateChangeListener) {
         networkListeners.add(listener)
-        sendSingleMessageForSingleSubscriber(networkListeners.indexOf(listener))
+        sendSingleMessageForSingleSubscriber(listener.hashCode())
     }
 
     fun unregisterNetworkStateListener(listener: InternetStateChangeListener) {
@@ -80,29 +80,25 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     fun notifyListenerWithHashCodeInternetConnected(arg: Int, networkState: NetworkService.NetworkClass) {
-        if (networkListeners.lastIndex >= arg || arg >= 0) {
-            networkListeners[arg].onInternetEnabled(networkState)
-        }
+        networkListeners.firstOrNull { it.hashCode() == arg }?.onInternetEnabled(networkState)
     }
 
     fun notifyListenerWithHashCodeInternetDisconnected(arg: Int, networkState: NetworkService.NetworkClass) {
-        if (networkListeners.lastIndex >= arg || arg >= 0) {
-            networkListeners[arg].onInternetDisabled(networkState)
-        }
+        networkListeners.firstOrNull { it.hashCode() == arg }?.onInternetDisabled(networkState)
     }
 
     fun sendSingleMessageToService() {
-        mService?.send(Message
+        val message = Message
             .obtain(null, NetworkService.MSG_REQUEST)
-            .apply { replyTo = mMessenger })
+            .apply { replyTo = mMessenger }
+        mService?.send(message)
     }
 
     private fun sendSingleMessageForSingleSubscriber(arg: Int) {
-        mService?.send(Message
-            .obtain(null, NetworkService.MSG_REQUEST)
-            .apply {
-                replyTo = mMessenger
-                arg2 = arg
-            })
+        val message = Message.obtain(null, NetworkService.MSG_REQUEST).apply {
+            replyTo = mMessenger
+            arg2 = arg
+        }
+        mService?.send(message)
     }
 }
