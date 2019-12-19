@@ -10,6 +10,7 @@ import android.net.NetworkRequest
 import android.os.*
 import androidx.annotation.RequiresApi
 import com.example.networkchangesample.utils.NetworkUtils.connectivityManager
+import com.example.networkchangesample.utils.validation.IHandler
 import com.example.networkchangesample.utils.validation.network.BaseNetworkHandler
 import com.example.networkchangesample.utils.validation.network.CellularNetworkHandler
 import com.example.networkchangesample.utils.validation.network.OtherNetworkHandler
@@ -28,15 +29,6 @@ class NetworkService : Service() {
     private val messenger = Messenger(IncomingHandler(this))
     private val networkReceiver = NetworkChangeReceiver(messenger)
     private lateinit var networkCallback: NetworkChangeCallback
-
-    @Suppress("DEPRECATION")
-    private fun registerFilter() {
-        try {
-            registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
-        } catch (e: Exception) {
-            /**NOP*/
-        }
-    }
 
     private class IncomingHandler(service: NetworkService) : Handler() {
 
@@ -126,6 +118,15 @@ class NetworkService : Service() {
     private fun registerCallBack() {
         networkCallback = NetworkChangeCallback(messenger)
         connectivityManager.registerNetworkCallback(NetworkRequest.Builder().build(), networkCallback)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun registerFilter() {
+        try {
+            registerReceiver(networkReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+        } catch (e: Exception) {
+            /**NOP*/
+        }
     }
 
     enum class NetworkClass {
