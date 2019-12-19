@@ -4,8 +4,7 @@ import android.content.Context
 import com.example.networkchangesample.network.receiver.NetworkService
 import com.example.networkchangesample.utils.validation.IHandler
 
-abstract class BaseNetworkHandler :
-    IHandler<Context, NetworkService.NetworkClass> {
+abstract class BaseNetworkHandler : IHandler<Context, NetworkService.NetworkClass> {
 
     protected abstract val currentValue: NetworkService.NetworkClass
     private var nextHandler: IHandler<Context, NetworkService.NetworkClass>? = null
@@ -17,7 +16,7 @@ abstract class BaseNetworkHandler :
         return nextHandler?.handle(data) ?: NetworkService.NetworkClass.NoNetwork
     }
 
-    override fun setNext(handler: IHandler<Context, NetworkService.NetworkClass>) : BaseNetworkHandler {
+    override fun setNext(handler: IHandler<Context, NetworkService.NetworkClass>): BaseNetworkHandler {
         nextHandler = handler
         return this
     }
