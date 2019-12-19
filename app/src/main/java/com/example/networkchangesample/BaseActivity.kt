@@ -100,6 +100,9 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun sendSingleMessageForSingleSubscriber(arg: Int) {
         mService?.send(Message
             .obtain(null, NetworkService.MSG_REQUEST)
-            .apply { arg2 = arg })
+            .apply {
+                replyTo = mMessenger
+                arg2 = arg
+            })
     }
 }
