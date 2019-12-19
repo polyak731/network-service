@@ -83,10 +83,6 @@ abstract class BaseActivity : AppCompatActivity() {
         networkListeners.firstOrNull { it.hashCode() == arg }?.onInternetEnabled(networkState)
     }
 
-    fun notifyListenerWithHashCodeInternetDisconnected(arg: Int, networkState: NetworkService.NetworkClass) {
-        networkListeners.firstOrNull { it.hashCode() == arg }?.onInternetDisabled(networkState)
-    }
-
     fun sendSingleMessageToService() {
         val message = Message
             .obtain(null, NetworkService.MSG_REQUEST)
