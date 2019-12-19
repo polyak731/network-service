@@ -10,10 +10,10 @@ import android.net.NetworkRequest
 import android.os.*
 import androidx.annotation.RequiresApi
 import com.example.networkchangesample.utils.NetworkUtils.connectivityManager
-import com.example.networkchangesample.utils.validation.BaseNetworkHandler
-import com.example.networkchangesample.utils.validation.CellularNetworkHandler
-import com.example.networkchangesample.utils.validation.OtherNetworkHandler
-import com.example.networkchangesample.utils.validation.WifiNetworkHandler
+import com.example.networkchangesample.utils.validation.network.BaseNetworkHandler
+import com.example.networkchangesample.utils.validation.network.CellularNetworkHandler
+import com.example.networkchangesample.utils.validation.network.OtherNetworkHandler
+import com.example.networkchangesample.utils.validation.network.WifiNetworkHandler
 import java.lang.ref.WeakReference
 
 class NetworkService : Service() {

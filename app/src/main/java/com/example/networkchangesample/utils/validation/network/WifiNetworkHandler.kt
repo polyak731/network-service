@@ -1,4 +1,4 @@
-package com.example.networkchangesample.utils.validation
+package com.example.networkchangesample.utils.validation.network
 
 import android.content.Context
 import android.net.NetworkCapabilities
