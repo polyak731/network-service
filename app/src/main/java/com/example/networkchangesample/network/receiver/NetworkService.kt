@@ -7,15 +7,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.NetworkRequest
-import android.os.*
+import android.os.Build
+import android.os.IBinder
+import android.os.Messenger
 import androidx.annotation.RequiresApi
 import com.example.networkchangesample.utils.NetworkUtils.connectivityManager
-import com.example.networkchangesample.utils.validation.IHandler
-import com.example.networkchangesample.utils.validation.network.BaseNetworkHandler
-import com.example.networkchangesample.utils.validation.network.CellularNetworkHandler
-import com.example.networkchangesample.utils.validation.network.OtherNetworkHandler
-import com.example.networkchangesample.utils.validation.network.WifiNetworkHandler
-import java.lang.ref.WeakReference
 
 class NetworkService : Service() {
 

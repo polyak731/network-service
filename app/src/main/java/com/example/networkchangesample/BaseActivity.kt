@@ -4,11 +4,13 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.os.*
+import android.os.IBinder
+import android.os.Message
+import android.os.Messenger
+import android.os.RemoteException
 import androidx.appcompat.app.AppCompatActivity
 import com.example.networkchangesample.network.receiver.InternetStateChangeListener
 import com.example.networkchangesample.network.receiver.NetworkService
-import java.lang.ref.WeakReference
 
 abstract class BaseActivity : AppCompatActivity() {
 
