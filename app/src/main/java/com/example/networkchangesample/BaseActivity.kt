@@ -53,24 +53,6 @@ abstract class BaseActivity : AppCompatActivity() {
         networkListeners.remove(listener)
     }
 
-    override fun onResume() {
-        super.onResume()
-        bindService(
-            Intent(this, NetworkService::class.java),
-            serviceConnection,
-            Context.BIND_AUTO_CREATE
-        )
-    }
-
-    override fun onDestroy() {
-        try {
-            unbindService(serviceConnection)
-        } catch (e: Exception) {
-            /**NOP*/
-        }
-        super.onDestroy()
-    }
-
     fun internetConnectionEnabled(networkState: NetworkService.NetworkClass) {
         networkListeners.forEach { it.onInternetEnabled(networkState) }
     }
@@ -88,6 +70,24 @@ abstract class BaseActivity : AppCompatActivity() {
             .obtain(null, NetworkService.MSG_REQUEST)
             .apply { replyTo = mMessenger }
         mService?.send(message)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        bindService(
+            Intent(this, NetworkService::class.java),
+            serviceConnection,
+            Context.BIND_AUTO_CREATE
+        )
+    }
+
+    override fun onDestroy() {
+        try {
+            unbindService(serviceConnection)
+        } catch (e: Exception) {
+            /**NOP*/
+        }
+        super.onDestroy()
     }
 
     private fun sendSingleMessageForSingleSubscriber(arg: Int) {
