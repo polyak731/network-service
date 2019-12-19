@@ -9,8 +9,11 @@ import android.net.ConnectivityManager
 import android.net.NetworkRequest
 import android.os.*
 import androidx.annotation.RequiresApi
-import com.example.networkchangesample.utils.NetworkUtils
 import com.example.networkchangesample.utils.NetworkUtils.connectivityManager
+import com.example.networkchangesample.utils.validation.BaseNetworkHandler
+import com.example.networkchangesample.utils.validation.CellularNetworkHandler
+import com.example.networkchangesample.utils.validation.OtherNetworkHandler
+import com.example.networkchangesample.utils.validation.WifiNetworkHandler
 import java.lang.ref.WeakReference
 
 class NetworkService : Service() {
@@ -40,6 +43,8 @@ class NetworkService : Service() {
         private val serviceReference: WeakReference<NetworkService> = WeakReference(service)
         private var clients = arrayListOf<Messenger>()
         private var currentNetworkClass: NetworkClass = NetworkClass.NoNetwork
+        private var networkHandler: BaseNetworkHandler = WifiNetworkHandler()
+            .setNext(CellularNetworkHandler().setNext(OtherNetworkHandler()))
 
         override fun handleMessage(msg: Message) {
             when (msg.what) {
@@ -64,14 +69,7 @@ class NetworkService : Service() {
             serviceReference.get()?.let { service ->
 
                 notifyClients(NetworkClass.mirror(currentNetworkClass))
-                currentNetworkClass = when {
-                    NetworkUtils.checkWifiState(service)
-                            || (NetworkUtils.checkWifiState(service)
-                            && NetworkUtils.checkCellularState(service)) -> NetworkClass.WiFiEnabled
-                    NetworkUtils.checkCellularState(service) -> NetworkClass.CellularEnabled
-                    NetworkUtils.checkNetworkState(service) -> NetworkClass.OtherEnabled
-                    else -> NetworkClass.NoNetwork
-                }
+                currentNetworkClass = networkHandler.handle(service)
                 notifyClients(currentNetworkClass)
             }
         }
