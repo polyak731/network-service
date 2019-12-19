@@ -21,7 +21,11 @@ class ActivityMessagesHandler(activity: BaseActivity) : Handler() {
                             activity.internetConnectionEnabled(networkState)
                         }
                     else {
-                        activity.internetConnectionDisabled(networkState)
+                        if (msg.arg2 != 0) {
+                            activity.notifyListenerWithHashCodeInternetDisconnected(msg.arg2, networkState)
+                        } else {
+                            activity.internetConnectionDisabled(networkState)
+                        }
                     }
                 }
                 else -> super.handleMessage(msg)

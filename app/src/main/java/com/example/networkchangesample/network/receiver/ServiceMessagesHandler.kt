@@ -39,7 +39,6 @@ class ServiceMessagesHandler(service: NetworkService) : Handler() {
 
     private fun handleNetworkMessage() {
         serviceReference.get()?.let { service ->
-
             notifyClients(NetworkService.NetworkClass.mirror(currentNetworkClass))
             currentNetworkClass = networkHandler.handle(service)
             notifyClients(currentNetworkClass)

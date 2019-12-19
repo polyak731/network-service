@@ -38,25 +38,24 @@ class NetworkService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            try {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 connectivityManager.unregisterNetworkCallback(networkCallback)
-            } catch (e: Exception) {
-                /**NOP*/
-            }
-        } else {
-            try {
+            } else {
                 unregisterReceiver(networkReceiver)
-            } catch (ignored: Exception) {
-                /**NOP*/
             }
+        } catch (e: Exception) {
+            /**NOP*/
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun registerCallBack() {
         networkCallback = NetworkChangeCallback(messenger)
-        connectivityManager.registerNetworkCallback(NetworkRequest.Builder().build(), networkCallback)
+        connectivityManager.registerNetworkCallback(
+            NetworkRequest.Builder().build(),
+            networkCallback
+        )
     }
 
     @Suppress("DEPRECATION")
