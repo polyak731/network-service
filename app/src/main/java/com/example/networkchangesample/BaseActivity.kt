@@ -15,7 +15,7 @@ abstract class BaseActivity : AppCompatActivity() {
     private var networkListeners: MutableList<InternetStateChangeListener> = mutableListOf()
 
     private var mService: Messenger? = null
-    private val mMessenger: Messenger by lazy { Messenger(IncomingHandler(this)) }
+    private val mMessenger: Messenger by lazy { Messenger(ActivityMessagesHandler(this)) }
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -69,27 +69,27 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun internetConnectionEnabled(networkState: NetworkService.NetworkClass) {
+    fun internetConnectionEnabled(networkState: NetworkService.NetworkClass) {
         networkListeners.forEach { it.onInternetEnabled(networkState) }
     }
 
-    private fun internetConnectionDisabled(networkState: NetworkService.NetworkClass) {
+    fun internetConnectionDisabled(networkState: NetworkService.NetworkClass) {
         networkListeners.forEach { it.onInternetDisabled(networkState) }
     }
 
-    private fun notifyListenerWithHashCodeInternetConnected(arg: Int, networkState: NetworkService.NetworkClass) {
+    fun notifyListenerWithHashCodeInternetConnected(arg: Int, networkState: NetworkService.NetworkClass) {
         if (networkListeners.lastIndex >= arg || arg >= 0) {
             networkListeners[arg].onInternetEnabled(networkState)
         }
     }
 
-    private fun notifyListenerWithHashCodeInternetDisconnected(arg: Int, networkState: NetworkService.NetworkClass) {
+    fun notifyListenerWithHashCodeInternetDisconnected(arg: Int, networkState: NetworkService.NetworkClass) {
         if (networkListeners.lastIndex >= arg || arg >= 0) {
             networkListeners[arg].onInternetDisabled(networkState)
         }
     }
 
-    private fun sendSingleMessageToService() {
+    fun sendSingleMessageToService() {
         mService?.send(Message
             .obtain(null, NetworkService.MSG_REQUEST)
             .apply { replyTo = mMessenger })
@@ -99,36 +99,5 @@ abstract class BaseActivity : AppCompatActivity() {
         mService?.send(Message
             .obtain(null, NetworkService.MSG_REQUEST)
             .apply { arg2 = arg })
-    }
-
-    class IncomingHandler(activity: BaseActivity) : Handler() {
-
-        private val activityReference: WeakReference<BaseActivity> = WeakReference(activity)
-
-        override fun handleMessage(msg: Message) {
-            activityReference.get()?.let { activity ->
-                when (msg.what) {
-                    NetworkService.MSG_SET_VALUE -> {
-                        val networkState = getMessageValue(msg)
-                        if (NetworkService.NetworkClass.isEnabledState(networkState))
-                            if (msg.arg2 != 0) {
-                                activity.notifyListenerWithHashCodeInternetConnected(msg.arg2, networkState)
-                            } else {
-                                activity.internetConnectionEnabled(networkState)
-                            }
-                        else if (msg.arg2 != 0) {
-                            activity.notifyListenerWithHashCodeInternetDisconnected(msg.arg2, networkState)
-                        } else {
-                            activity.internetConnectionDisabled(networkState)
-                        }
-                    }
-                    else -> super.handleMessage(msg)
-                }
-            }
-        }
-
-        private fun getMessageValue(msg: Message): NetworkService.NetworkClass =
-            msg.obj?.let { it as? NetworkService.NetworkClass }
-                ?: NetworkService.NetworkClass.NoNetwork
     }
 }

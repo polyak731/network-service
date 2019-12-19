@@ -26,64 +26,9 @@ class NetworkService : Service() {
         const val MSG_REQUEST = 4
     }
 
-    private val messenger = Messenger(IncomingHandler(this))
+    private val messenger = Messenger(ServiceMessagesHandler(this))
     private val networkReceiver = NetworkChangeReceiver(messenger)
     private lateinit var networkCallback: NetworkChangeCallback
-
-    private class IncomingHandler(service: NetworkService) : Handler() {
-
-        private val serviceReference: WeakReference<NetworkService> = WeakReference(service)
-        private var clients = arrayListOf<Messenger>()
-        private var currentNetworkClass: NetworkClass = NetworkClass.NoNetwork
-        private var networkHandler: BaseNetworkHandler = WifiNetworkHandler()
-            .setNext(CellularNetworkHandler().setNext(OtherNetworkHandler()))
-
-        override fun handleMessage(msg: Message) {
-            when (msg.what) {
-                MSG_REGISTER_CLIENT -> clients.add(msg.replyTo)
-                MSG_UNREGISTER_CLIENT -> clients.remove(msg.replyTo)
-                MSG_REQUEST -> handleSingleMessage(msg)
-                MSG_SET_VALUE -> handleNetworkMessage()
-                else -> super.handleMessage(msg)
-            }
-        }
-
-        private fun handleSingleMessage(msg: Message) {
-            serviceReference.get()?.let { notifyClientWithMessage(msg.replyTo,
-                Message.obtain(null, MSG_SET_VALUE, currentNetworkClass)
-                    .apply {
-                        arg1 = msg.arg1
-                        arg2 = msg.arg2
-                    }) }
-        }
-
-        private fun handleNetworkMessage() {
-            serviceReference.get()?.let { service ->
-
-                notifyClients(NetworkClass.mirror(currentNetworkClass))
-                currentNetworkClass = networkHandler.handle(service)
-                notifyClients(currentNetworkClass)
-            }
-        }
-
-        private fun notifyClients(obj: Any?) {
-            for (i in clients.size - 1 downTo 0) {
-                try {
-                    notifyClient(clients[i], obj)
-                } catch (e: RemoteException) {
-                    clients.removeAt(i)
-                }
-            }
-        }
-
-        private fun notifyClient(messenger: Messenger, obj: Any?) {
-            messenger.send(Message.obtain(null, MSG_SET_VALUE, obj))
-        }
-
-        private fun notifyClientWithMessage(messenger: Messenger, message: Message) {
-            messenger.send(message)
-        }
-    }
 
     override fun onBind(intent: Intent?): IBinder? = messenger.binder
 
